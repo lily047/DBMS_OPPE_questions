@@ -60,5 +60,119 @@ FROM
 ORDER BY dob
 LIMIT 1;
 
-/*
 
+/*
+Query the two cities in STATION with the shortest and longest CITY names, as well as their respective lengths (i.e.: number of characters in the name). If there is more than one smallest or largest city, choose the one that comes first when ordered alphabetically.
+The STATION table is described as follows:
+*/
+/*
+Enter your query here.
+*/
+(SELECT 
+    s.city , CHAR_LENGTH(s.city)
+FROM 
+    station s
+WHERE CHAR_LENGTH(s.city) = (
+    SELECT 
+        MAX(CHAR_LENGTH(city ))
+    FROM station 
+)
+ORDER BY 
+    s.city 
+LIMIT 1 )
+UNION 
+(SELECT 
+    s.city, 
+    CHAR_LENGTH(s.city)
+FROM 
+    station s
+WHERE CHAR_LENGTH(s.city) = (
+    SELECT 
+        MIN(CHAR_LENGTH(city ))
+    FROM station 
+)
+ORDER BY 
+    s.city 
+LIMIT 1 )
+ORDER BY city
+
+--ALT CODE 
+/*The WITH clause in SQL is used to create a CTE (Common Table Expression).
+Think of it as making a temporary result/table that you can use inside your main query.*/
+
+WITH lengths AS (
+    SELECT 
+        MIN(CHAR_LENGTH(city)) AS min_len,
+        MAX(CHAR_LENGTH(city)) AS max_len
+    FROM station
+)
+(
+    SELECT city, CHAR_LENGTH(city) AS len
+    FROM station s
+    CROSS JOIN lengths l
+    WHERE CHAR_LENGTH(s.city) = l.max_len
+    ORDER BY city
+    LIMIT 1
+)
+UNION ALL
+(
+    SELECT city, CHAR_LENGTH(city) AS len
+    FROM station s
+    CROSS JOIN lengths l
+    WHERE CHAR_LENGTH(s.city) = l.min_len
+    ORDER BY city
+    LIMIT 1
+);
+
+/*
+Query the list of CITY names starting with vowels (i.e., a, e, i, o, or u) from STATION. Your result cannot contain duplicates.
+*/
+
+--postgres does not support REGEXp, hackerrank uses MySQL 
+
+--MySQL 
+SELECT 
+    DISTINCT city 
+FROM 
+    station 
+WHERE 
+    city REGEXP '^[aeiou]';
+
+--POSTGRESSQL
+SELECT 
+	name 
+FROM 
+	teams 
+WHERE 
+	name  ~* '^[aeiou]'
+-- * infront of the ~ makes it case insensitive 
+-- !~* means does not match 
+--For cities which do not strat with the vowels, add a "NOT" REGEXP 
+
+/*
+Query the list of CITY names ending with vowels (i.e., a, e, i, o, or u) from STATION. Your result cannot contain duplicates.
+*/
+
+--postgres does not support REGEXp, hackerrank uses MySQL 
+SELECT 
+    DISTINCT city 
+FROM 
+    station 
+WHERE 
+    city REGEXP '[aeiou]$';
+
+/*
+Query the Name of any student in STUDENTS who scored higher than  Marks. Order your output by the last three characters of each name. If two or more students both have names ending in the same last three characters (i.e.: Bobby, Robby, etc.), secondary sort them by ascending ID.
+*/
+/*
+Enter your query here.
+*/
+SELECT 
+    name 
+FROM 
+    students 
+WHERE 
+    marks > 75
+ORDER BY 
+    SUBSTRING(name, -3), 
+    ID 
