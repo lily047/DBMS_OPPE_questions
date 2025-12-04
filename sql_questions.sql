@@ -215,3 +215,69 @@ WHERE
 				WHERE
 					m.host_team_id = t.team_id AND
 					m.host_team_score <= m.guest_team_score);
+-- 5 MArk questions 
+/*
+1. Find title and doi of books issued by students whose first_name ends with 'a' and from department 'Mechanical Engineering' or 'Computer Science'
+*/
+
+SELECT 
+	i.doi, ca.title 
+FROM 
+	book_issue i 
+JOIN book_copies c ON i.accession_no = c.accession_no 
+JOIN book_catalogue ca ON c.ISBN_no = ca.ISBN_no 
+JOIN members m ON i.member_no = m.member_no
+JOIN students s ON s.roll_no = m.roll_no 
+JOIN departments d ON s.department_code = d.department_code 
+WHERE 
+	s.student_fname LIKE '%a'
+	AND d.department_name IN ('Mechanical Engineering', 'Computer Science')
+
+/*
+2. Write an SQL Query to find name and dob of the assistant_referee_2 of the match between 'all Star' and 'Amigos' on '2020-05-17'
+*/
+
+SELECT
+	r.name,
+	dob
+FROM
+	referees r
+JOIN match_referees mr ON mr.assistant_referee_2 = r.referee_id
+JOIN matches m ON m.match_num = mr.match_num
+JOIN teams t1 ON t1.team_id = m.host_team_id
+JOIN teams t2 ON t2.team_id = m.guest_team_id
+WHERE
+	match_date = '2020-05-17' AND
+	(t1.name = 'All Stars' AND t2.name = 'Amigos') OR
+	(t1.name = 'Amigos' AND t2.name = 'All Stars');
+
+/*
+4. Write an SQL query to find the team names that have never lost a match (as a host or as a guest)
+*/
+
+SELECT 
+	t.name 
+FROM 
+	teams t
+WHERE NOT EXISTS (
+				SELECT 
+					DISTINCT t1.team_id
+				FROM 
+					teams t1
+				JOIN matches m ON t1.team_id = m.host_team_id 
+				WHERE 
+					t1.team_id = t.team_id 
+						AND
+					m.host_team_score < m.guest_team_score
+				UNION
+				SELECT 
+					DISTINCT t2.team_id
+				FROM 
+					teams t2 
+				JOIN matches m ON t2.team_id = m.guest_team_id 
+				WHERE 
+					t2.team_id = t.team_id 
+							AND
+				m.guest_team_score < m.host_team_score
+)
+
