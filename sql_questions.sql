@@ -176,3 +176,42 @@ WHERE
 ORDER BY 
     SUBSTRING(name, -3), 
     ID 
+/*
+"" throw a syntax error cuz they r not used for strings but are used for columns 
+EXCEPT - removes duplicates 
+EXCPET ALL - doesn't remove duplicates 
+*/
+
+/*
+12. Write a SQL statement to find the player name, jersey no of player and team name of players who played for teams that hosted matches in 2020 and also had a jersey number less than 10
+*/
+
+SELECT DISTINCT
+	p.name,
+	jersey_no,
+	t.name
+FROM
+	matches m
+JOIN teams t ON t.team_id = m.host_team_id
+JOIN players p ON p.team_id = t.team_id
+WHERE
+	match_date BETWEEN '2020-01-01' AND '2020-12-31' AND
+	jersey_no < 10;
+
+/*
+10. Write an SQL query to retrieve the names of all teams that have won all the matches they played (means their score was always higher than the guest
+team)
+*/
+
+SELECT
+	name
+FROM
+	teams t
+WHERE
+	NOT EXISTS (SELECT
+					*
+				FROM
+					matches m
+				WHERE
+					m.host_team_id = t.team_id AND
+					m.host_team_score <= m.guest_team_score);
