@@ -26,11 +26,11 @@ with open('parameter.txt', 'r') as f:
 conn = None 
 
 try:
-  conn = psycopg2.connect(database = 'lis_db', 
-                         user = 'postgres', 
-                         password = 'Meghana@0407',
-                         host = '127.0.0.1', 
-                         port = '5432')
+  conn = psycopg2.connect(database = sys.argv[1], 
+                         user = os.environ.get('PGUSER'), 
+                         password =  os.environ.get('PGPASSWORD'),,
+                         host =  os.environ.get('PGHOST'), 
+                         port =  os.environ.get('PGPORT'),)
 
   cursor = conn.cursor()
 
