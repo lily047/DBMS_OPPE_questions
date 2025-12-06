@@ -18,6 +18,14 @@ WHERE
 			o.user_id = u.user_id
 	);
 
+--ALT CODE:
+SELECT user_name 
+FROM users 
+WHERE user_id NOT IN (
+	SELECT user_id 
+	FROM orders 
+)
+
 /*
 12. Write an SQL query to find the referee_id, number of matches conducted by referee 'Tony Joseph Louis'
 */
@@ -30,7 +38,7 @@ FROM
 JOIN referees r ON r.referee_id IN( mr.referee, mr.assistant_referee_1, mr.assistant_referee_2, mr.fourth_referee )
 WHERE
 	name = 'Tony Joseph Louis'
-GROUP BY referee;
+GROUP BY referee; --only referee or even assistant referee and stuff??
 
 --MEDIUM AND HARD 
 /*
@@ -64,6 +72,10 @@ LIMIT 1;
 /*
 Query the two cities in STATION with the shortest and longest CITY names, as well as their respective lengths (i.e.: number of characters in the name). If there is more than one smallest or largest city, choose the one that comes first when ordered alphabetically.
 The STATION table is described as follows:
+SELECT city, LENGTH(city)
+FROM station 
+WHERE LENGTH(CITY) = ( SELECT MIN(LENGTH(CITY)) FROM STATION ) OR  LENGTH(CITY) = ( SELECT MAX(LENGTH(CITY)) FROM STATION )
+ORDER BY city
 */
 /*
 Enter your query here.
@@ -164,9 +176,7 @@ WHERE
 /*
 Query the Name of any student in STUDENTS who scored higher than  Marks. Order your output by the last three characters of each name. If two or more students both have names ending in the same last three characters (i.e.: Bobby, Robby, etc.), secondary sort them by ascending ID.
 */
-/*
-Enter your query here.
-*/
+--hard
 SELECT 
     name 
 FROM 
@@ -197,6 +207,12 @@ JOIN players p ON p.team_id = t.team_id
 WHERE
 	match_date BETWEEN '2020-01-01' AND '2020-12-31' AND
 	jersey_no < 10;
+--ALT CODE 
+SELECT DISTINCT p.name, p.jersey_no, t.name 
+FROM players p
+JOIN matches m ON p.team_id = m.host_team_id
+JOIN teams t ON p.team_id = t.team_id 
+WHERE EXTRACT(YEAR FROM m.match_date) = 2020 AND p.jersey_no < 10
 
 /*
 10. Write an SQL query to retrieve the names of all teams that have won all the matches they played (means their score was always higher than the guest
