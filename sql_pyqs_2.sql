@@ -187,3 +187,81 @@ title
 Calculus  ← Only this, because only MATH201 (same course_id) is in both semesters
 
 */
+/*
+Write a SQL statement to find out the number of students who have studied in each building from 2005 till 2008 (including 2005, 2008).
+*/
+SELECT  COUNT(DISTINCT s.id ), se.building,
+FROM student s 
+JOIN takes t ON s.id = t.id
+JOIN section se ON t.course_id = se.course_id AND t.sec_id = se.sec_id AND t.semester = se.semester AND t.year = se.year
+WHERE se.year >=2005 AND se.year <= 2008
+GROUP BY  se.building
+-- MY mistake: when there are multiple primary keys in a table, join using all of them. 
+
+/*
+Let D be the set of all departments whose average salary is more than the maximum salary of 'Psychology' department. Write a SQL statement to find the name and salary of the instructor(s) who has/have the maximum salary in each department in D.
+*/
+SELECT i.name, i.salary 
+FROM (
+SELECT dept_name, AVG(SALARY) AS avg_salary
+FROM instructor 
+GROUP BY dept_name
+HAVING AVG(SALARY) > (
+    SELECT MAX(salary)
+    FROM instructor 
+    WHERE dept_name = 'Psychology'
+)) AS a
+JOIN instructor i ON i.dept_name = a.dept_name
+WHERE i.salary = (
+  SELECT MAX(SALARY)
+  FROM instructor i2
+  WHERE i2.dept_name = i.dept_name
+) --optimize this query later on 
+
+/*
+Write a SQL statement to find out the number of courses which have been taught in Fall semester but never in Spring semester.
+*/
+WITH fall_only_courses AS (SELECT DISTINCT s.course_id
+FROM section s JOIN course c ON c.course_id = s.course_id
+WHERE semester = 'Fall'
+EXCEPT 
+SELECT DISTINCT s.course_id
+FROM section s JOIN course c ON c.course_id = s.course_id
+WHERE semester = 'Spring' )
+
+SELECT COUNT( DISTINCT c.course_id )
+FROM course c
+JOIN fall_only_courses foc ON c.course_id = foc.course_id
+
+--- i complicated shit
+--easier version:
+SELECT COUNT (DISTINCT course_id )
+FROM section 
+WHERE semester = 'Fall'
+AND course_id NOT IN (
+  SELECT course_id 
+  FROM section 
+  WHERE semester = 'Spring'
+)
+
+/*
+Print name,id,num count of instructor(s) who has taught maximum number of classes on the day 'W'. (num count is the number of the classes they took on day 'W'.)
+*/
+
+WITH temp_table (iid, count_of_instrs) AS (SELECT i.id, COUNT(*) AS num_count_of_instructors
+FROM instructor i
+JOIN teaches t ON t.id = i.id 
+JOIN section s ON s.course_id = t.course_id AND s.sec_id = t.sec_id AND t.semester= s.semester AND t.year = s.year 
+JOIN time_slot ts ON s.time_slot_id = ts.time_slot_id
+WHERE ts.day = 'W'
+GROUP BY i.id
+ORDER BY COUNT(*)  DESC
+)
+
+SELECT  i.name,i.id, tt.count_of_instrs
+FROM  temp_table tt JOIN instructor i ON i.id = tt.iid
+WHERE tt.count_of_instrs >= ALL (
+  SELECT count_of_instrs 
+  FROM temp_table 
+)
+
